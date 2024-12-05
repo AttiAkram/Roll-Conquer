@@ -7,7 +7,7 @@ public class Client {
         int port = 12345; // Porta del server
 
         try (Socket socket = new Socket(serverAddress, port)) {
-            System.out.println("Connesso al server!");
+            System.out.println("Connesso al server!"+socket);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -16,7 +16,7 @@ public class Client {
             System.out.println(in.readLine()); // Messaggio di benvenuto
 
             String userInput;
-            System.out.println("Scrivi un messaggio (digita 'pronto' per dichiararti pronto o 'exit' per uscire):");
+            System.out.println("Scrivi un comando ('lancia' per lanciare i dadi, 'exit' per uscire):");
             while ((userInput = consoleInput.readLine()) != null) {
                 out.println(userInput); // Invia il messaggio al server
                 String serverResponse = in.readLine();

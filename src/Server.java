@@ -41,7 +41,35 @@ public class Server {
             throw new RuntimeException(e);
         }
     }
+    static void phase1RollDice() {
+        System.out.println("Fase 1: Lancio dei dadi.");
+        for (ClientThread ct : ClientThread.clientsList) {
+            ct.resetRoll(); // Resetta lo stato di lancio
+        }
 
-    public static void startTurn() {
+        while (ClientThread.clientsList.stream().anyMatch(ct -> !ct.hasRolled())) {
+            for (ClientThread ct : ClientThread.clientsList) {
+                if (!ct.hasRolled()) {
+                    ct.rollDice(); // Lancia i dadi
+                    System.out.println(ct.getClientName() + " ha lanciato i dadi: " + ct.getLastRoll());
+                }
+            }
+        }
+
+        // Dopo che tutti hanno lanciato, invia un riepilogo
+        StringBuilder results = new StringBuilder("Risultati del lancio dei dadi:\n");
+        for (ClientThread ct : ClientThread.clientsList) {
+            results.append(ct.getClientName()).append(": ").append(ct.getLastRoll()).append("\n");
+        }
+
+        notifyAllClients(results.toString());
+    }
+
+    private static void notifyAllClients(String message) {
+        synchronized (ClientThread.clientsList) {
+            for (ClientThread ct : ClientThread.clientsList) {
+                ct.sendMessage(message);
+            }
+        }
     }
 }

@@ -19,6 +19,11 @@ public class ClientThread extends Thread {
     private PrintWriter out;
     public static final ArrayList<ClientThread> clientsList = new ArrayList<>();
 
+
+
+    private boolean hasRolled = false; // Indica se il client ha lanciato i dadi nella fase corrente
+    private int lastRoll = 0;
+
     public ClientThread(Socket socket) {
         this.socket = socket;
 
@@ -40,6 +45,7 @@ public class ClientThread extends Thread {
     }
 
     public void run() {
+
         try {
             String line;
             while ((line = in.readLine()) != null) {
@@ -79,32 +85,51 @@ public class ClientThread extends Thread {
             long readyCount = clientsList.stream().filter(ct -> ct.isReady).count();
             if (readyCount == clientsList.size()) {
                 System.out.println("Tutti i client sono pronti. La partita inizia!");
-                notifyAllClients("La partita è iniziata! Preparati.");
-                startGame();
+                notifyAllClients("La partita è iniziata! Preparati per il lancio dei dadi.");
+                while (true) {
+                    if (clientsList.stream().anyMatch(ct -> !ct.hasRolled())) {
+                        for (ClientThread ct : clientsList) {
+                            if (!ct.hasRolled()) {
+                                ct.rollDice(); // Lancia i dadi
+                                System.out.println(ct.getClientName() + " ha lanciato i dadi: " + ct.getLastRoll());
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                    Server.phase1RollDice(); // Chiama il metodo per il lancio dei dadi
+
+                }
             }
         }
     }
-    private void startGame() {
-        // Logica iniziale della partita (es. invio messaggio iniziale)
-        notifyAllClients("È il turno del primo giocatore!");
-        Server.startTurn();
-    }
-    public static void startTurn() {
-        synchronized (ClientThread.clientsList) {
-            if (ClientThread.clientsList.isEmpty()) {
-                System.out.println("Nessun client connesso. Partita terminata.");
-                return;
-            }
 
-            ClientThread currentPlayer = ClientThread.clientsList.get(0); // Turno del primo giocatore
-            System.out.println("È il turno di " + currentPlayer.getName() + ".");
-
-            // Invia il messaggio al giocatore corrente
-            currentPlayer.sendMessage("È il tuo turno! Lancia i dadi scrivendo 'lancia'.");
-        }
-    }
     public void sendMessage(String message) {
         out.println(message);
     }
 
+    public int rollDice() {
+        // Simula il lancio di due dadi da 6
+        int dice1 = (int) (Math.random() * 6) + 1;
+        int dice2 = (int) (Math.random() * 6) + 1;
+        lastRoll = dice1 + dice2;
+        hasRolled = true; // Segna che il client ha lanciato i dadi
+        return lastRoll;
+    }
+
+    public boolean hasRolled() {
+        return hasRolled;
+    }
+
+    public void resetRoll() {
+        hasRolled = false;
+    }
+
+    public int getLastRoll() {
+        return lastRoll;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
 }
