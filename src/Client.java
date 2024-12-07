@@ -14,7 +14,7 @@ public class Client {
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println(in.readLine()); // Messaggio di benvenuto
-
+0
             String userInput;
             System.out.println("Scrivi un comando ('lancia' per lanciare i dadi, 'exit' per uscire):");
             while ((userInput = consoleInput.readLine()) != null) {
@@ -22,13 +22,18 @@ public class Client {
                 String serverResponse = in.readLine();
                 System.out.println("Risposta dal server: " + serverResponse);
 
-                if (userInput.equalsIgnoreCase("exit")) {
+                if (userInput.equalsIgnoreCase("exit") || serverResponse.equalsIgnoreCase("null")) {
                     System.out.println("Disconnessione...");
                     break;
                 }
             }
+
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            System.out.println("Disconnesso.");
+            System.exit(0);
         }
     }
 }

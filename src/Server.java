@@ -66,6 +66,7 @@ public class Server {
     }
 
     private static void notifyAllClients(String message) {
+
         synchronized (ClientThread.clientsList) {
             for (ClientThread ct : ClientThread.clientsList) {
                 ct.sendMessage(message);
