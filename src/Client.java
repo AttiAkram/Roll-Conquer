@@ -18,7 +18,7 @@ public class Client {
             String userInput;
             System.out.println("Scrivi un comando ('lancia' per lanciare i dadi, 'exit' per uscire):");
             while ((userInput = consoleInput.readLine()) != null) {
-                out.println(userInput); // Invia il messaggio al server
+                out.println(userInput); // Invia messaggio al server
                 String serverResponse = in.readLine();
                 System.out.println("Risposta dal server: " + serverResponse);
 
