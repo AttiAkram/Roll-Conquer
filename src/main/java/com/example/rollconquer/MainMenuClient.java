@@ -44,16 +44,20 @@ public class MainMenuClient extends Application {
         chatArea.setLayoutY(132); // Imposta la posizione Y
         chatArea.setStyle("-fx-text-fill: black; -fx-control-inner-background: white;"); // Imposta il colore del testo a nero e lo sfondo a bianco
 
-        // **Campo Input e Pulsante Invia**
+        // **Campo Input e Immagine Invia**
         inputField = new TextField();
         inputField.setPromptText("Scrivi un messaggio...");
         inputField.setPrefWidth(115); // Imposta la larghezza del campo di input per essere uguale all'area della chat
-        javafx.scene.control.Button sendButton = new javafx.scene.control.Button("Invia");
-        sendButton.setOnAction(e -> sendMessage());
-        sendButton.setPrefWidth(115); // Imposta la larghezza del pulsante per essere uguale all'area della chat
 
-        // VBox per centrare il pulsante sotto il campo di input
-        VBox inputBox = new VBox(10, inputField, sendButton);
+        // Immagine del pulsante Invia
+        Image sendImage = new Image(getClass().getResourceAsStream("/images/invia.png"));
+        ImageView sendImageView = new ImageView(sendImage);
+        sendImageView.setFitWidth(122);
+        sendImageView.setFitHeight(39);
+        sendImageView.setOnMouseClicked(e -> sendMessage());
+
+        // VBox per centrare l'immagine sotto il campo di input
+        VBox inputBox = new VBox(10, inputField, sendImageView);
         inputBox.setPadding(new Insets(10));
         inputBox.setLayoutX(560); // Imposta la posizione X
         inputBox.setLayoutY(309); // Imposta la posizione Y
