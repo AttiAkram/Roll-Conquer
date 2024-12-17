@@ -16,17 +16,10 @@ public class ClientThread extends Thread {
     private static int nameIndex = 0;
     private String clientName;
     private boolean isReady = false; // Stato pronto del client
-
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     public static final ArrayList<ClientThread> clientsList = new ArrayList<>();
-
-
-
-    private boolean hasRolled = false; // Indica se il client ha lanciato i dadi nella fase corrente
-    private int lastRoll = 0;
-
     public ClientThread(Socket socket) {
         this.socket = socket;
 
@@ -35,13 +28,15 @@ public class ClientThread extends Thread {
                 nameIndex = 0; // Ricomincia se i nomi sono finiti
             }
             this.clientName = FANTASY_NAMES.get(nameIndex++);
+
         }
 
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-
             out.println("Benvenuto " + clientName + "! Digita 'pronto' per dichiararti pronto.");
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -62,8 +57,9 @@ public class ClientThread extends Thread {
                     break;
                 } else if (line.equalsIgnoreCase("pronto")) {
                     this.isReady = true;
-                    System.out.println(clientName + " è pronto.");
                     out.println("Sei stato dichiarato pronto!");
+                    System.out.println(clientName + " è pronto.");
+                    broadcast(clientName + " è pronto.");
                     checkGameStart();
                 } else {
                     System.out.println(clientName + ": " + line);
@@ -76,66 +72,23 @@ public class ClientThread extends Thread {
     }
 
 
-    private void notifyAllClients(String message) {
-        synchronized (clientsList) {
-            for (ClientThread ct : clientsList) {
-                ct.out.println(message);
-            }
-        }
-    }
-
     private void checkGameStart() {
         synchronized (clientsList) {
             long readyCount = clientsList.stream().filter(ct -> ct.isReady).count();
-            if (readyCount == clientsList.size()) {
-                System.out.println("Tutti i client sono pronti. La partita inizia!");
-                notifyAllClients("La partita è iniziata! Preparati per il lancio dei dadi.");
-                while (true) {
-                    if (clientsList.stream().anyMatch(ct -> !ct.hasRolled())) {
-                        for (ClientThread ct : clientsList) {
-                            if (!ct.hasRolled()) {
-                                ct.rollDice(); // Lancia i dadi
-                                System.out.println(ct.getClientName() + " ha lanciato i dadi: " + ct.getLastRoll());
-                            }
-                        }
-                    } else {
-                        break;
-                    }
-                    Server.phase1RollDice(); // Chiama il metodo per il lancio dei dadi
+            if (readyCount == clientsList.size() && clientsList.size() >= 2) {
+                System.out.println("Tutti i client sono pronti. Avvio del ServerGame...");
+                notifyAllClients("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.");
 
-                }
             }
         }
     }
+
 
     public void sendMessage(String message) {
         out.println(message);
     }
 
-    public int rollDice() {
-        // Simula il lancio di due dadi da 6
-        int dice1 = (int) (Math.random() * 6) + 1;
-        int dice2 = (int) (Math.random() * 6) + 1;
-        lastRoll = dice1 + dice2;
-        hasRolled = true; // Segna che il client ha lanciato i dadi
-        return lastRoll;
-    }
 
-    public boolean hasRolled() {
-        return hasRolled;
-    }
-
-    public void resetRoll() {
-        hasRolled = false;
-    }
-
-    public int getLastRoll() {
-        return lastRoll;
-    }
-
-    public String getClientName() {
-        return clientName;
-    }
     private void broadcast(String message) {
         synchronized (clientsList) {
             for (ClientThread client : clientsList) {
@@ -145,4 +98,14 @@ public class ClientThread extends Thread {
             }
         }
     }
+
+    private static void notifyAllClients(String message) {
+
+        synchronized (ClientThread.clientsList) {
+            for (ClientThread ct : ClientThread.clientsList) {
+                ct.sendMessage(message);
+            }
+        }
+    }
+
 }

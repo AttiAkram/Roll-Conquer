@@ -85,9 +85,6 @@ public class MainMenuClient extends Application {
             }).start();
 
 
-
-
-
             chatArea.appendText("Connesso al server!\n");
         } catch (Exception e) {
             chatArea.appendText("Errore di connessione al server!\n");

@@ -1,11 +1,12 @@
 package com.example.rollconquer;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class  Server {
+public class Server {
     private static final int MAX_CLIENTS = 5; // numero massimo di client che possono connettersi al server
+
     public static void main(String[] args) {
         // quando viene eseguito il programma si crea un oggetto socket  (ServerSocket) in ascolto sulla porta 12345
         try {
@@ -41,38 +42,6 @@ public class  Server {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-    static void phase1RollDice() {
-        System.out.println("Fase 1: Lancio dei dadi.");
-        for (ClientThread ct : ClientThread.clientsList) {
-            ct.resetRoll(); // Resetta lo stato di lancio
-        }
-
-        while (ClientThread.clientsList.stream().anyMatch(ct -> !ct.hasRolled())) {
-            for (ClientThread ct : ClientThread.clientsList) {
-                if (!ct.hasRolled()) {
-                    ct.rollDice(); // Lancia i dadi
-                    System.out.println(ct.getClientName() + " ha lanciato i dadi: " + ct.getLastRoll());
-                }
-            }
-        }
-
-        // Dopo che tutti hanno lanciato, invia un riepilogo
-        StringBuilder results = new StringBuilder("Risultati del lancio dei dadi:\n");
-        for (ClientThread ct : ClientThread.clientsList) {
-            results.append(ct.getClientName()).append(": ").append(ct.getLastRoll()).append("\n");
-        }
-
-        notifyAllClients(results.toString());
-    }
-
-    private static void notifyAllClients(String message) {
-
-        synchronized (ClientThread.clientsList) {
-            for (ClientThread ct : ClientThread.clientsList) {
-                ct.sendMessage(message);
-            }
         }
     }
 }
