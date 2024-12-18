@@ -1,33 +1,30 @@
 package com.example.rollconquer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class GameClientThread extends Thread {
     private Socket socket;
-    private PrintWriter out;
     private BufferedReader in;
-    private String playerName;
-    public static final ArrayList<GameClientThread> playersList = new ArrayList<GameClientThread>();
-    public GameClientThread(Socket socket) {
+    private PrintWriter out;
+    private Game game;
+    private Player player;
+
+    public static final ArrayList<GameClientThread> playersList = new ArrayList<>();
+
+    public GameClientThread(Socket socket, Game game) {
         this.socket = socket;
-        this.playerName = "benve";
+        this.game = game;
+        this.player = new Player("Player");
+
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            out.println("Benvenuto " + this.playerName + "! Digita 'pronto' per dichiararti pronto.");
-            synchronized (GameClientThread.playersList) {
-                GameClientThread.playersList.add(this);
-            }
+            out.println("Connesso al gioco! Scrivi 'lancia' per tirare i dadi.");
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Errore nel client thread.");
         }
-
-
     }
 
     @Override
@@ -36,18 +33,10 @@ public class GameClientThread extends Thread {
 
     }
 
-    public void sendMessage(String message) {
-        out.println(message);
-    }
-
-
-
-
-    private static void notifyAllClients(String message) {
-
-        synchronized (GameClientThread.playersList) {
-            for (GameClientThread ct : GameClientThread.playersList) {
-                ct.sendMessage(message);
+    private void broadcast(String message) {
+        synchronized (playersList) {
+            for (GameClientThread player : playersList) {
+                player.out.println(message);
             }
         }
     }

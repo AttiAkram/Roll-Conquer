@@ -77,7 +77,9 @@ public class ClientThread extends Thread {
             long readyCount = clientsList.stream().filter(ct -> ct.isReady).count();
             if (readyCount == clientsList.size() && clientsList.size() >= 2) {
                 System.out.println("Tutti i client sono pronti. Avvio del ServerGame...");
-                notifyAllClients("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.");
+                System.out.println("client name: " + this.clientName);
+               // notifyAllClients("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.");
+
 
             }
         }

@@ -22,12 +22,16 @@ public class Client {
             Thread receiveThread = new Thread(() -> {
                 String serverMessage;
                 try {
+                    String prefix = "nome client : ";
                     while ((serverMessage = in.readLine()) != null) {
                         System.out.println("Messaggio dal server: " + serverMessage);
 
                         if (serverMessage.equals("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.")) {
                             connectToServerGame(serverMessage);
                             break;
+                        } else if (serverMessage.startsWith(prefix)) {
+                            String clientName = serverMessage.substring(prefix.length()).trim();
+                            System.out.println("Client name: " + clientName);
                         }
                     }
                 } catch (IOException e) {
@@ -89,12 +93,25 @@ public class Client {
             });
             gameReceiveThread.start();
 
-            // Invio dei comandi al ServerGame
-            String userInput;
-            while ((userInput = consoleInput.readLine()) != null) {
-                out.println(userInput);
+            // Thread per inviare i messaggi al serverGame
+            Thread sendThread = new Thread(() -> {
+                String userInput;
+                try {
+                    while ((userInput = consoleInput.readLine()) != null) {
+                        out.println(userInput); // Invia il messaggio al server
+                        if (userInput.equalsIgnoreCase("exit")) {
+                            System.out.println("Disconnessione in corso...");
+                            break;
+                        }
+                    }
+                   // Chiudi il socket se l'utente scrive "exit"
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
 
-            }
+            sendThread.start(); // Avvia il thread di invio
+
             gameSocket.close();
         } catch (IOException e) {
             System.out.println("Errore di connessione al ServerGame.");
