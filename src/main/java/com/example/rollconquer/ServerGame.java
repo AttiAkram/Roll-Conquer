@@ -1,29 +1,22 @@
 package com.example.rollconquer;
 
-import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
-public class ServerGame {
+public class ServerGame extends AbstractServer {
+    public ServerGame(int port) {
+        super(port);
+    }
 
+    @Override
+    protected void handleClient(Socket clientSocket) {
+        GameClientThread gameClientThread = new GameClientThread(clientSocket);
+        synchronized (GameClientThread.playersList) {
+            GameClientThread.playersList.add(gameClientThread);
+        }
+        gameClientThread.start();
+    }
 
     public static void main(String[] args) {
-        try {
-            ServerSocket serverSocket = new ServerSocket(12346);
-            while (true) {
-                Socket s = serverSocket.accept();
-                GameClientThread ct = new GameClientThread(s);
-                synchronized (GameClientThread.playersList) {
-                    GameClientThread.playersList.add(ct);
-                }
-                ct.start();
-                System.out.println("Client connesso! ");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
+        new ServerGame(12346).startServer();
     }
 }
-
-
