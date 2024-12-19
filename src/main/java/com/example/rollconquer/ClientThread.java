@@ -34,7 +34,7 @@ public class ClientThread extends Thread {
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            out.println("Benvenuto " + clientName + "! Digita 'pronto' per dichiararti pronto.");
+            out.println("Benvenuto " + clientName);
 
 
         } catch (IOException e) {

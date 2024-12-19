@@ -22,11 +22,12 @@ public class Client {
             Thread receiveThread = new Thread(() -> {
                 String serverMessage;
                 try {
-                    String prefix = "nome client : ";
+                    String prefix = "Benvenuto";
                     while ((serverMessage = in.readLine()) != null) {
                         System.out.println("Messaggio dal server: " + serverMessage);
 
                         if (serverMessage.equals("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.")) {
+
                             connectToServerGame(serverMessage);
                             break;
                         } else if (serverMessage.startsWith(prefix)) {
@@ -76,9 +77,6 @@ public class Client {
             BufferedReader in = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
             PrintWriter out = new PrintWriter(gameSocket.getOutputStream(), true);
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
-
-            // Invia subito il nome del client al ServerGame
-            out.println(clientName);
 
             // Thread per ricevere i messaggi dal ServerGame
             Thread gameReceiveThread = new Thread(() -> {

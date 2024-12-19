@@ -16,12 +16,12 @@ public class GameClientThread extends Thread {
     public GameClientThread(Socket socket, Game game) {
         this.socket = socket;
         this.game = game;
-        this.player = new Player("Player");
+
 
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-            out.println("Connesso al gioco! Scrivi 'lancia' per tirare i dadi.");
+
         } catch (IOException e) {
             System.out.println("Errore nel client thread.");
         }
@@ -29,6 +29,7 @@ public class GameClientThread extends Thread {
 
     @Override
     public void run() {
+
 
 
     }

@@ -209,7 +209,7 @@ class Player {
     }
 }
 
-// Enum e Classe Cella
+// Enum e Classe Cella per le costanti
 enum ZoneType {
     NEUTRAL, REST, HOSTILE, TREASURE, FINAL
 }
