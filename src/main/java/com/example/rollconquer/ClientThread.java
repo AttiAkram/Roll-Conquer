@@ -4,14 +4,15 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ClientThread extends Thread {
-    private static final List<String> FANTASY_NAMES = Arrays.asList(
+    private static final List<String> FANTASY_NAMES = new ArrayList<>(Arrays.asList(
             "Dracowolf", "Shadowfox", "Phoenixcat", "Gryphondog",
             "Moonhare", "Stormserpent", "Frostlynx", "Emberstag",
             "Crystalotter", "Thunderowl"
-    );
+    ));
 
     private static int nameIndex = 0;
     private String clientName;
@@ -20,12 +21,14 @@ public class ClientThread extends Thread {
     private BufferedReader in;
     private PrintWriter out;
     public static final ArrayList<ClientThread> clientsList = new ArrayList<>();
+
     public ClientThread(Socket socket) {
         this.socket = socket;
 
         synchronized (FANTASY_NAMES) {
             if (nameIndex >= FANTASY_NAMES.size()) {
-                nameIndex = 0; // Ricomincia se i nomi sono finiti
+                nameIndex = 0; // Reset e rimischia quando finisce la lista
+                shuffleNames();
             }
             this.clientName = FANTASY_NAMES.get(nameIndex++);
 
@@ -34,7 +37,7 @@ public class ClientThread extends Thread {
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            out.println("Benvenuto " + clientName + "! Digita 'pronto' per dichiararti pronto.");
+            out.println("Benvenuto " + clientName);
 
 
         } catch (IOException e) {
@@ -67,7 +70,11 @@ public class ClientThread extends Thread {
                 }
             }
         } catch (IOException e) {
+            synchronized (clientsList) {
+                clientsList.remove(this);
+            }
             System.out.println(clientName + " si è disconnesso inaspettatamente.");
+
         }
     }
 
@@ -75,10 +82,10 @@ public class ClientThread extends Thread {
     private void checkGameStart() {
         synchronized (clientsList) {
             long readyCount = clientsList.stream().filter(ct -> ct.isReady).count();
-            if (readyCount == clientsList.size() && clientsList.size() >= 2) {
-                System.out.println("Tutti i client sono pronti. Avvio del ServerGame...");
-                System.out.println("client name: " + this.clientName);
-               // notifyAllClients("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.");
+            if (readyCount == clientsList.size()) {
+                //System.out.println("Tutti i client sono pronti. Avvio del ServerGame...");
+                //System.out.println("client name: " + this.clientName);
+                notifyAllClients("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.");
 
 
             }
@@ -110,4 +117,8 @@ public class ClientThread extends Thread {
         }
     }
 
+
+    private void shuffleNames() {
+        Collections.shuffle(FANTASY_NAMES);
+    }
 }

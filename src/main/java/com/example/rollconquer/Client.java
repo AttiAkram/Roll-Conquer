@@ -7,11 +7,13 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class Client {
-    public static void main(String[] args) {
-        String serverAddress = "localhost"; // Indirizzo del server
-        int port = 12345; // Porta del server
+    public static String clientName;
 
-        try (Socket socket = new Socket(serverAddress, port)) {
+    public static void main(String[] args) {
+        // String serverAddress = "localhost"; // Indirizzo del server
+        // int port = 12345; // Porta del server
+
+        try (Socket socket = new Socket("localhost", 12345)) {
             System.out.println("Connesso al server!");
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -22,15 +24,15 @@ public class Client {
             Thread receiveThread = new Thread(() -> {
                 String serverMessage;
                 try {
-                    String prefix = "nome client : ";
+                    String prefix = "Benvenuto";
                     while ((serverMessage = in.readLine()) != null) {
                         System.out.println("Messaggio dal server: " + serverMessage);
 
                         if (serverMessage.equals("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.")) {
-                            connectToServerGame(serverMessage);
+                            connectToServerGame(clientName); //metto il commento qua per ricorcdare le mie 3 ore per trovare che il problema era questo connectToServerGame(serverMessage);
                             break;
                         } else if (serverMessage.startsWith(prefix)) {
-                            String clientName = serverMessage.substring(prefix.length()).trim();
+                            clientName = serverMessage.substring(prefix.length()).trim();
                             System.out.println("Client name: " + clientName);
                         }
                     }
@@ -77,7 +79,7 @@ public class Client {
             PrintWriter out = new PrintWriter(gameSocket.getOutputStream(), true);
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
 
-            // Invia subito il nome del client al ServerGame
+            // Invia il nome del client al ServerGame
             out.println(clientName);
 
             // Thread per ricevere i messaggi dal ServerGame
@@ -93,30 +95,34 @@ public class Client {
             });
             gameReceiveThread.start();
 
-            // Thread per inviare i messaggi al serverGame
-            Thread sendThread = new Thread(() -> {
+            // Thread per inviare i messaggi al ServerGame
+            Thread gameSendThread = new Thread(() -> {
                 String userInput;
                 try {
                     while ((userInput = consoleInput.readLine()) != null) {
-                        out.println(userInput); // Invia il messaggio al server
+                        out.println(userInput); // Invia il messaggio al ServerGame
                         if (userInput.equalsIgnoreCase("exit")) {
                             System.out.println("Disconnessione in corso...");
                             break;
                         }
                     }
-                   // Chiudi il socket se l'utente scrive "exit"
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
 
-            sendThread.start(); // Avvia il thread di invio
+            gameSendThread.start();
 
-            gameSocket.close();
+            gameReceiveThread.join();
+            gameSendThread.join();
+
         } catch (IOException e) {
             System.out.println("Errore di connessione al ServerGame.");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
+
 
 }
 
