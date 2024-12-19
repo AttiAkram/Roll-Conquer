@@ -8,19 +8,18 @@ import java.net.Socket;
 
 public class Client {
     public static String clientName;
+    private static PrintWriter serverOut; // Per inviare al server principale
+    private static PrintWriter gameOut;   // Per inviare al ServerGame
 
     public static void main(String[] args) {
-        // String serverAddress = "localhost"; // Indirizzo del server
-        // int port = 12345; // Porta del server
-
         try (Socket socket = new Socket("localhost", 12345)) {
             System.out.println("Connesso al server!");
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            serverOut = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
 
-            // Thread per ricevere i messaggi dal server
+            // Thread per ricevere messaggi dal server
             Thread receiveThread = new Thread(() -> {
                 String serverMessage;
                 try {
@@ -29,7 +28,7 @@ public class Client {
                         System.out.println("Messaggio dal server: " + serverMessage);
 
                         if (serverMessage.equals("Tutti pronti! Connettiti al ServerGame sulla porta 12346 per iniziare il gioco.")) {
-                            connectToServerGame(clientName); //metto il commento qua per ricorcdare le mie 3 ore per trovare che il problema era questo connectToServerGame(serverMessage);
+                            connectToServerGame(clientName);
                             break;
                         } else if (serverMessage.startsWith(prefix)) {
                             clientName = serverMessage.substring(prefix.length()).trim();
@@ -41,21 +40,30 @@ public class Client {
                 }
             });
 
-
             receiveThread.start(); // Avvia il thread di ricezione
 
-            // Thread per inviare i messaggi al server
+            // Thread unificato per inviare comandi al server principale o al ServerGame
             Thread sendThread = new Thread(() -> {
                 String userInput;
                 try {
                     while ((userInput = consoleInput.readLine()) != null) {
-                        out.println(userInput); // Invia il messaggio al server
+                        if (userInput.startsWith("chat:")) {
+                            // Invio al server principale
+                            String message = userInput.substring(5).trim();
+                            serverOut.println(message);
+                        } else if (userInput.startsWith("game:") && gameOut != null) {
+                            // Invio al ServerGame
+                            String command = userInput.substring(5).trim();
+                            gameOut.println(command);
+                        } else {
+                            System.out.println("Formato comando non valido! Usa 'chat:' o 'game:' oppure non ancora unito al server game.");
+                        }
+
                         if (userInput.equalsIgnoreCase("exit")) {
                             System.out.println("Disconnessione in corso...");
                             break;
                         }
                     }
-                    socket.close(); // Chiudi il socket se l'utente scrive "exit"
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -63,7 +71,6 @@ public class Client {
 
             sendThread.start(); // Avvia il thread di invio
 
-            // Aspetta che i due thread terminino prima di chiudere il client
             receiveThread.join();
             sendThread.join();
 
@@ -73,16 +80,18 @@ public class Client {
     }
 
     private static void connectToServerGame(String clientName) {
-        try (Socket gameSocket = new Socket("localhost", 12346)) {
+        try {
+            Socket gameSocket = new Socket("localhost", 12346);
             System.out.println("Connesso al ServerGame!");
+
             BufferedReader in = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
-            PrintWriter out = new PrintWriter(gameSocket.getOutputStream(), true);
+            gameOut = new PrintWriter(gameSocket.getOutputStream(), true);
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
 
             // Invia il nome del client al ServerGame
-            out.println(clientName);
+            gameOut.println(clientName);
 
-            // Thread per ricevere i messaggi dal ServerGame
+            // Thread per ricevere messaggi dal ServerGame
             Thread gameReceiveThread = new Thread(() -> {
                 try {
                     String serverMessage;
@@ -93,36 +102,12 @@ public class Client {
                     System.out.println("Connessione chiusa dal ServerGame.");
                 }
             });
+
             gameReceiveThread.start();
-
-            // Thread per inviare i messaggi al ServerGame
-            Thread gameSendThread = new Thread(() -> {
-                String userInput;
-                try {
-                    while ((userInput = consoleInput.readLine()) != null) {
-                        out.println(userInput); // Invia il messaggio al ServerGame
-                        if (userInput.equalsIgnoreCase("exit")) {
-                            System.out.println("Disconnessione in corso...");
-                            break;
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            gameSendThread.start();
-
             gameReceiveThread.join();
-            gameSendThread.join();
 
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println("Errore di connessione al ServerGame.");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
-
-
 }
-
