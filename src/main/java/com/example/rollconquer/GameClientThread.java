@@ -3,6 +3,8 @@ package com.example.rollconquer;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 public class GameClientThread extends Thread {
@@ -11,15 +13,14 @@ public class GameClientThread extends Thread {
     private PrintWriter out;
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
-
-    private boolean hasThrow;
-
-    public static final ArrayList<GameClientThread> playersList = new ArrayList<>();
+    public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
     private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
+    private final ServerGame server;
 
     // Costruttore
-    public GameClientThread(Socket socket) {
+    public GameClientThread(ServerGame server, Socket socket) {
         this.socket = socket;
+        this.server = server;
 
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -45,22 +46,21 @@ public class GameClientThread extends Thread {
 
             String message;
             while ((message = in.readLine()) != null) {
-                hasThrow = false;
-                if (message.equalsIgnoreCase("lancia") && isHasThrowAll()) {
-                    handleDiceRoll();
-                    hasThrow = true;
+                if (message.equalsIgnoreCase("lancia") && player.historyThrow.size() < this.server.loopCount) {
+                    player.historyThrow.add(handleDiceRoll());
+                    raiseCountLoop();
                 } else if (message.equalsIgnoreCase("info")) {
                     player.showInfo();
-                } else if(!isHasThrowAll()) {
-                    out.println("Aspetta che tutti i giocatori lancino i dadi.");
-                }else {
+                } else {
                     out.println("comando non valido, usare lancia o info.");
                     //System.out.println(player.getName() + ": " + message);
                     //broadcast(player.getName() + ": " + message);
                 }
+
             }
         } catch (IOException e) {
             System.out.println(player.getName() + " si è disconnesso.");
+            playersList.remove(this);
         } finally {
             synchronized (playersList) {
                 playersList.remove(this);
@@ -69,18 +69,21 @@ public class GameClientThread extends Thread {
         }
     }
 
-    private boolean isHasThrowAll() {
-        for (GameClientThread playerThread : playersList) {
-            if (!playerThread.hasThrow) { // Controlla se un giocatore NON ha ancora lanciato
-                return false;             // Se almeno uno NON ha lanciato, ritorna false
+    private void raiseCountLoop() {
+        boolean flag = true;
+        for (GameClientThread game: playersList) {
+            if (game.player.historyThrow.size() < this.server.loopCount) {
+                flag = false;
+                break;
             }
         }
-        return true; // Se tutti hanno lanciato, ritorna true
+        if (flag) {
+            this.server.loopCount++;
+        }
     }
 
-
     // Metodo per gestire il lancio dei dadi
-    private void handleDiceRoll() {
+    private int handleDiceRoll() {
         int diceRoll = rollDice(6); // Lancia un dado a 6 facce
         int movement = player.calculateMovement(diceRoll); // Calcola il movimento
         player.move(movement, board); // Muove il giocatore sulla board
@@ -91,6 +94,8 @@ public class GameClientThread extends Thread {
 
         // Mostra informazioni aggiornate
         broadcast(player.getName() + " ha lanciato un " + diceRoll + " e ora è in posizione " + player.getPosition());
+
+        return diceRoll;
     }
 
     // Metodo per inizializzare il tabellone

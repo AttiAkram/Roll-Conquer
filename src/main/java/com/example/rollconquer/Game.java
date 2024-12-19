@@ -119,6 +119,7 @@ class Player {
     private int totalScore;
     private int currentBonus;
     private int currentMalus;
+    public final ArrayList<Integer> historyThrow = new ArrayList<>();
 
     public Player(String name) {
         this.name = name;
