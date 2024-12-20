@@ -16,6 +16,7 @@ public class GameClientThread extends Thread {
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
     private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
     private final ServerGame server;
+    private static final List<GameClientThread> finalPlayers = Collections.synchronizedList(new ArrayList<>()); // Lista giocatori alla cella finale
 
     // Costruttore
     public GameClientThread(ServerGame server, Socket socket) {
@@ -71,7 +72,7 @@ public class GameClientThread extends Thread {
 
     private void raiseCountLoop() {
         boolean flag = true;
-        for (GameClientThread game: playersList) {
+        for (GameClientThread game : playersList) {
             if (game.player.historyThrow.size() < this.server.loopCount) {
                 flag = false;
                 break;
@@ -84,12 +85,16 @@ public class GameClientThread extends Thread {
 
     // Metodo per gestire il lancio dei dadi
     private int handleDiceRoll() {
-        int diceRoll = rollDice(6); // Lancia un dado a 6 facce
+        int diceRoll = rollDice(6);// Lancia un dado a 6 facce
+        int diceRoll2 = diceRoll;
+        out.println("Hai la prima volta lanciato un " + diceRoll2 + ".");
+        diceRoll += rollDice(6); // Lancia un altro dado a 6 facce
         int movement = player.calculateMovement(diceRoll); // Calcola il movimento
         player.move(movement, board); // Muove il giocatore sulla board
 
+        int finalRoll = diceRoll - diceRoll2;
         // Invio delle informazioni al client
-        out.println("Hai lanciato un " + diceRoll + ".");
+        out.println("Hai la seconda volta lanciato un " + finalRoll + ".");
         out.println("Nuova posizione: " + player.getPosition());
 
         // Mostra informazioni aggiornate
@@ -102,7 +107,10 @@ public class GameClientThread extends Thread {
     private static void initializeBoard() {
         for (int i = 0; i < board.length - 1; i++) {
             int probability = random.nextInt(100) + 1;
-            if (probability <= 40) {
+            if (i == 0) {
+                System.out.println("Zona Iniziale");
+                board[i] = new Cell(ZoneType.REST, "Zona Iniziale");
+            } else if (probability <= 40) {
                 board[i] = new Cell(ZoneType.NEUTRAL, "Zona Neutra");
             } else if (probability <= 60) {
                 board[i] = new Cell(ZoneType.REST, "Zona Riposo");

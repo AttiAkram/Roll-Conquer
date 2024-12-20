@@ -27,74 +27,6 @@ public class Game {
         board[BOARD_SIZE - 1] = new Cell(ZoneType.FINAL, "Zona Finale");
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        ArrayList<Player> players = new ArrayList<>();
-
-        // Creazione dei giocatori
-        System.out.println("Quanti giocatori partecipano?");
-        int playerCount = Integer.parseInt(scanner.nextLine());
-        for (int i = 1; i <= playerCount; i++) {
-            players.add(new Player("Giocatore " + i));
-        }
-
-        initializeBoard();
-
-        // Gioco principale
-        while (!checkGameEnd(players)) {
-            turnCounter++;
-            System.out.println("\n--- Turno " + turnCounter + " ---");
-
-            for (Player player : players) {
-                System.out.println("\nÈ il turno di " + player.getName());
-
-                boolean validChoice = false;
-                while (!validChoice) {
-                    System.out.println("Scegli un'opzione:");
-                    System.out.println("1. Lancia i dadi");
-                    System.out.println("2. Mostra le tue informazioni");
-                    System.out.println("3. Esci dal gioco");
-
-                    String input = scanner.nextLine();
-
-                    switch (input) {
-                        case "1":
-                            validChoice = true;
-
-                            // Lancio dei dadi
-                            int dice1 = rollDice(6);
-                            int dice2 = rollDice(6);
-                            int diceSum = dice1 + dice2;
-
-                            System.out.println("Hai lanciato: " + dice1 + " + " + dice2 + " = " + diceSum);
-
-                            // Movimento del giocatore
-                            int movement = player.calculateMovement(diceSum);
-                            player.move(movement, board);
-
-                            break;
-
-                        case "2":
-                            player.showInfo();
-                            break;
-
-                        case "3":
-                            System.out.println("Grazie per aver giocato. Arrivederci!");
-                            System.exit(0);
-                            break;
-
-                        default:
-                            System.out.println("Input non valido. Riprova.");
-                            break;
-                    }
-                }
-            }
-        }
-
-        System.out.println("La partita è finita! Congratulazioni ai vincitori!");
-        scanner.close();
-    }
-
     // Lancia un dado con numero di facce specificato
     static int rollDice(int sides) {
         return random.nextInt(sides) + 1;
@@ -224,3 +156,70 @@ class Cell {
         this.name = name;
     }
 }
+/*    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ArrayList<Player> players = new ArrayList<>();
+
+        // Creazione dei giocatori
+        System.out.println("Quanti giocatori partecipano?");
+        int playerCount = Integer.parseInt(scanner.nextLine());
+        for (int i = 1; i <= playerCount; i++) {
+            players.add(new Player("Giocatore " + i));
+        }
+
+        initializeBoard();
+
+        // Gioco principale
+        while (!checkGameEnd(players)) {
+            turnCounter++;
+            System.out.println("\n--- Turno " + turnCounter + " ---");
+
+            for (Player player : players) {
+                System.out.println("\nÈ il turno di " + player.getName());
+
+                boolean validChoice = false;
+                while (!validChoice) {
+                    System.out.println("Scegli un'opzione:");
+                    System.out.println("1. Lancia i dadi");
+                    System.out.println("2. Mostra le tue informazioni");
+                    System.out.println("3. Esci dal gioco");
+
+                    String input = scanner.nextLine();
+
+                    switch (input) {
+                        case "1":
+                            validChoice = true;
+
+                            // Lancio dei dadi
+                            int dice1 = rollDice(6);
+                            int dice2 = rollDice(6);
+                            int diceSum = dice1 + dice2;
+
+                            System.out.println("Hai lanciato: " + dice1 + " + " + dice2 + " = " + diceSum);
+
+                            // Movimento del giocatore
+                            int movement = player.calculateMovement(diceSum);
+                            player.move(movement, board);
+
+                            break;
+
+                        case "2":
+                            player.showInfo();
+                            break;
+
+                        case "3":
+                            System.out.println("Grazie per aver giocato. Arrivederci!");
+                            System.exit(0);
+                            break;
+
+                        default:
+                            System.out.println("Input non valido. Riprova.");
+                            break;
+                    }
+                }
+            }
+        }
+
+        System.out.println("La partita è finita! Congratulazioni ai vincitori!");
+        scanner.close();
+    }*/
