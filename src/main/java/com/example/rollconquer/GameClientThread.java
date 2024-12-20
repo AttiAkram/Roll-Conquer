@@ -14,7 +14,7 @@ public class GameClientThread extends Thread {
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
-    private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
+    private static final Cell[] board = new Cell[20]; // Simuliamo la board di gioco
     private final ServerGame server;
     private static final List<GameClientThread> finalPlayers = Collections.synchronizedList(new ArrayList<>()); // Lista giocatori alla cella finale
 
@@ -84,25 +84,88 @@ public class GameClientThread extends Thread {
     }
 
     // Metodo per gestire il lancio dei dadi
+    // Metodo per gestire il lancio dei dadi
     private int handleDiceRoll() {
-        int diceRoll = rollDice(6);// Lancia un dado a 6 facce
+        int diceRoll = rollDice(6); // Primo dado a 6 facce
         int diceRoll2 = diceRoll;
         out.println("Hai la prima volta lanciato un " + diceRoll2 + ".");
-        diceRoll += rollDice(6); // Lancia un altro dado a 6 facce
-        int movement = player.calculateMovement(diceRoll); // Calcola il movimento
-        player.move(movement, board); // Muove il giocatore sulla board
+        diceRoll += rollDice(6); // Secondo dado a 6 facce
 
-        int finalRoll = diceRoll - diceRoll2;
-        // Invio delle informazioni al client
-        out.println("Hai la seconda volta lanciato un " + finalRoll + ".");
+        int movement = player.calculateMovement(diceRoll);
+        player.move(movement, board); // Muove il giocatore sulla board
+        out.println("Hai la seconda volta lanciato un " + (diceRoll - diceRoll2) + ".");
         out.println("Nuova posizione: " + player.getPosition());
 
-        // Mostra informazioni aggiornate
         broadcast(player.getName() + " ha lanciato un " + diceRoll + " e ora è in posizione " + player.getPosition());
 
+        // Controllo se il giocatore ha raggiunto la cella finale
+        if (player.getPosition() >= board.length - 1) {
+            synchronized (finalPlayers) {
+                finalPlayers.add(this);
+                broadcast(player.getName() + " ha raggiunto la cella finale!");
+
+                // Se tutti hanno completato il turno e ci sono più finalisti, avvia lo spareggio
+                if (allPlayersFinishedTurn() && finalPlayers.size() > 1) {
+                    performTieBreaker();
+                } else if (finalPlayers.size() == 1) { // Solo un giocatore ha finito
+                    broadcast(player.getName() + " ha vinto la partita!");
+                    endGame();
+                }
+            }
+        }
         return diceRoll;
     }
+    // Metodo per verificare se tutti i giocatori hanno completato il turno
+    private boolean allPlayersFinishedTurn() {
+        for (GameClientThread game : playersList) {
+            if (game.player.historyThrow.size() < this.server.loopCount) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    // Metodo per spareggio tra i finalisti
+    private void performTieBreaker() {
+        broadcast("Spareggio tra i giocatori finalisti!");
+
+        int highestRoll = 0;
+        GameClientThread winner = null;
+
+        for (GameClientThread playerThread : finalPlayers) {
+            int roll = rollDice(6);
+            playerThread.out.println("Hai lanciato un dado da spareggio: " + roll);
+            broadcast(playerThread.player.getName() + " ha lanciato un " + roll + " nello spareggio.");
+
+            if (roll > highestRoll) {
+                highestRoll = roll;
+                winner = playerThread;
+            }
+        }
+
+        if (winner != null) {
+            broadcast(winner.player.getName() + " ha vinto la partita con un lancio di " + highestRoll + "!");
+            endGame();
+        }
+    }
+
+    // Metodo per terminare la partita e disconnettere i client
+    private void endGame() {
+        broadcast("La partita è terminata. Grazie per aver giocato!");
+
+        // Disconnette tutti i giocatori
+        synchronized (playersList) {
+            for (GameClientThread playerThread : playersList) {
+                try {
+                    playerThread.socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            playersList.clear();
+            finalPlayers.clear();
+        }
+    }
     // Metodo per inizializzare il tabellone
     private static void initializeBoard() {
         for (int i = 0; i < board.length - 1; i++) {
