@@ -14,7 +14,7 @@ public class GameClientThread extends Thread {
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
-    private static final Cell[] board = new Cell[20]; // Simuliamo la board di gioco
+    private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
     private final ServerGame server;
     private static final List<GameClientThread> finalPlayers = Collections.synchronizedList(new ArrayList<>()); // Lista giocatori alla cella finale
 

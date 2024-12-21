@@ -102,10 +102,8 @@ public class Client {
                     System.out.println("Connessione chiusa dal ServerGame.");
                 }
             });
-
             gameReceiveThread.start();
             gameReceiveThread.join();
-
         } catch (IOException | InterruptedException e) {
             System.out.println("Errore di connessione al ServerGame.");
         }
