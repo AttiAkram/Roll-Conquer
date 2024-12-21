@@ -14,9 +14,11 @@ public class GameClientThread extends Thread {
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
-    private static final Cell[] board = new Cell[20]; // Simuliamo la board di gioco
+    private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
     private final ServerGame server;
     private static final List<GameClientThread> finalPlayers = Collections.synchronizedList(new ArrayList<>()); // Lista giocatori alla cella finale
+
+    public int turni = 0;  // Contatore turni
 
     // Costruttore
     public GameClientThread(ServerGame server, Socket socket) {
@@ -86,15 +88,16 @@ public class GameClientThread extends Thread {
     // Metodo per gestire il lancio dei dadi
     // Metodo per gestire il lancio dei dadi
     private int handleDiceRoll() {
+        turni++;
         int diceRoll = rollDice(6); // Primo dado a 6 facce
         int diceRoll2 = diceRoll;
-        out.println("Hai la prima volta lanciato un " + diceRoll2 + ".");
+        out.println("Hai la prima volta lanciato un " + diceRoll2);
         diceRoll += rollDice(6); // Secondo dado a 6 facce
 
         int movement = player.calculateMovement(diceRoll);
         player.move(movement, board); // Muove il giocatore sulla board
-        out.println("Hai la seconda volta lanciato un " + (diceRoll - diceRoll2) + ".");
-        out.println("Nuova posizione: " + player.getPosition());
+        out.println("Hai la seconda volta lanciato un " + (diceRoll - diceRoll2));
+        //   out.println("Nuova posizione: " + player.getPosition());
 
         // Invio delle informazioni al client
         /*out.println("Hai lanciato un " + diceRoll + ".");
@@ -102,6 +105,7 @@ public class GameClientThread extends Thread {
 
         // Mostra informazioni aggiornate
         out.println(player.showInfo() + player.getLastZone());
+        out.println("Turni " + turni);
 
         broadcast(player.getName() + " ha lanciato un " + diceRoll + " e ora è in posizione " + player.getPosition());
 
@@ -122,6 +126,7 @@ public class GameClientThread extends Thread {
         }
         return diceRoll;
     }
+
     // Metodo per verificare se tutti i giocatori hanno completato il turno
     private boolean allPlayersFinishedTurn() {
         for (GameClientThread game : playersList) {
@@ -173,6 +178,7 @@ public class GameClientThread extends Thread {
             finalPlayers.clear();
         }
     }
+
     // Metodo per inizializzare il tabellone
     private static void initializeBoard() {
         for (int i = 0; i < board.length - 1; i++) {

@@ -47,6 +47,8 @@ public class Game {
 // Classe Giocatore
 class Player {
     private String name;
+
+
     private int position;
     private int totalScore;
     private int currentBonus;
@@ -95,7 +97,7 @@ class Player {
                 int treasureBonus = rollTreasureBonus();
                 currentBonus += treasureBonus;
                 System.out.println("Hai trovato un tesoro! Bonus aggiunto: " + treasureBonus);
-                lastZone = "Hai trovato un tesoro!";
+                lastZone = "Zona tesoro!";
                 break;
 
             case HOSTILE:
@@ -143,7 +145,8 @@ class Player {
     }
 
     public String showInfo() {
-        return "----- Informazioni di " + name + " -----\n" + "Posizione: " + position + "\n" + "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n" + "Ultimo Movimento: " + totalScore + "\n" + "----------------------------------------" + "\n";
+        //return "----- Informazioni di " + name + " -----\n" + "Posizione: " + position + "\n" + "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n" + "Ultimo Movimento: " + totalScore + "\n" + "----------------------------------------" + "\n";
+        return "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n";
         /*System.out.println("----- Informazioni di " + name + " -----");
         System.out.println("Posizione: " + position);
         System.out.println("Bonus Attuale: " + currentBonus);

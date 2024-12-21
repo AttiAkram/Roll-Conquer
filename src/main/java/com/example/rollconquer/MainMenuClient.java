@@ -4,12 +4,13 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -87,6 +88,47 @@ public class MainMenuClient extends Application {
             chatArea.appendText("Tu: pronto\n");
         });
 
+        // Pulsante "Rule"
+        Image buttonImageRule = new Image(getClass().getResourceAsStream("/images/Rules.png"));
+        ImageView buttonImageRuleView = new ImageView(buttonImageRule);
+        buttonImageRuleView.setFitWidth(32);
+        buttonImageRuleView.setFitHeight(31);
+        buttonImageRuleView.setLayoutX(47);
+        buttonImageRuleView.setLayoutY(360);
+
+        buttonImageRuleView.setOnMouseClicked(e -> {
+            // Crea un nuovo Stage (finestra)
+            Stage rulesWindow = new Stage();
+            rulesWindow.setTitle("Regole");
+
+            // Imposta le dimensioni della finestra
+            rulesWindow.setWidth(437);
+            rulesWindow.setHeight(791);
+
+            // Crea un pannello per il contenuto
+            Pane root = new Pane();
+
+            // Carica l'immagine di sfondo
+            BackgroundImage backgroundImage = new BackgroundImage(
+                    new Image(getClass().getResourceAsStream("/images/RulesBg.png"), 437, 791, false, true),
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.DEFAULT,
+                    BackgroundSize.DEFAULT
+            );
+            root.setBackground(new Background(backgroundImage));
+
+            // Aggiungi il pannello a una scena
+            Scene scene = new Scene(root, 437, 791);
+
+            // Imposta la scena sulla finestra
+            rulesWindow.setScene(scene);
+
+            // Rendi la finestra chiudibile
+            rulesWindow.initModality(Modality.APPLICATION_MODAL); // Blocca interazioni con la finestra principale
+            rulesWindow.show();
+        });
+
         // Immagine di sfondo
         Image backgroundImage = new Image(getClass().getResourceAsStream("/images/background.png"));
         ImageView backgroundView = new ImageView(backgroundImage);
@@ -95,14 +137,14 @@ public class MainMenuClient extends Application {
 
         // Layout principale
         Pane root = new Pane();
-        root.getChildren().addAll(backgroundView, inputBox, buttonImageView,chatBackgroundView, chatArea);
+        root.getChildren().addAll(backgroundView, inputBox, buttonImageView, chatBackgroundView, chatArea, buttonImageRuleView);
         // Aggiungi prima l'immagine di sfondo, poi la TextArea
 
         Scene scene = new Scene(root, 791, 437);
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        connectToServer( root, backgroundView, buttonImageView);
+        connectToServer(root, backgroundView, buttonImageView);
     }
 
     private void connectToServer(Pane root, ImageView backgroundView, ImageView buttonImageView) {
@@ -150,6 +192,7 @@ public class MainMenuClient extends Application {
         if (message.startsWith("chat:")) {
             chatArea.appendText("Tu: " + message.substring(5).trim() + "\n");
             serverOut.println(message.substring(5).trim());
+
         } else if (message.startsWith("game:") && gameOut != null) {
             gameOut.println(message.substring(5).trim());
         } else {
@@ -176,6 +219,60 @@ public class MainMenuClient extends Application {
             buttonDiceImageView.setLayoutX(21);
             buttonDiceImageView.setLayoutY(350);
 
+
+            // Creazione delle Label vuote
+            Label labelPrimoLancio = new Label();
+            labelPrimoLancio.setLayoutX(298);
+            labelPrimoLancio.setLayoutY(323);
+            labelPrimoLancio.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+
+            Label labelSecondoLancio = new Label();
+            labelSecondoLancio.setLayoutX(388);
+            labelSecondoLancio.setLayoutY(323);
+            labelSecondoLancio.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+
+            Label labelMalus = new Label();
+            labelMalus.setLayoutX(150);
+            labelMalus.setLayoutY(62);
+            labelMalus.setStyle("-fx-font-size: 18px; -fx-text-fill: #000000;");
+
+            Label labelBonus = new Label();
+            labelBonus.setLayoutX(150);
+            labelBonus.setLayoutY(28);
+            labelBonus.setStyle("-fx-font-size: 18px; -fx-text-fill: #000000;");
+
+            Label labelPosizione = new Label();
+            labelPosizione.setLayoutX(345);
+            labelPosizione.setLayoutY(207);
+            labelPosizione.setStyle("-fx-font-size: 18px; -fx-text-fill: white;");
+
+            Label labelZona = new Label();
+            labelZona.setLayoutX(62);
+            labelZona.setLayoutY(212);
+            labelZona.setStyle("-fx-font-size: 18px; -fx-text-fill: #000000;");
+
+            Label labelTurni = new Label();
+            labelTurni.setLayoutX(54);
+            labelTurni.setLayoutY(43);
+            labelTurni.setStyle("-fx-font-size: 18px; -fx-text-fill: #000000;");
+
+            TextArea playerArea = new TextArea();
+            playerArea.setEditable(false);
+            playerArea.setWrapText(true);
+            playerArea.setPrefSize(174, 176);
+            playerArea.setLayoutX(258); // Deve coincidere con l'immagine
+            playerArea.setLayoutY(119); // Deve coincidere con l'immagine
+
+            // Imposta lo stile per rendere trasparente lo sfondo e i bordi
+            playerArea.setStyle("-fx-background-color: transparent; " +
+                    "-fx-background-insets: 0; " +
+                    "-fx-background-radius: 0; " +
+                    "-fx-control-inner-background: transparent; " +
+                    "-fx-text-fill: black; " +
+                    "-fx-border-color: transparent;");
+            playerArea.setOpacity(0.8); // Per garantire un livello di trasparenza
+
+
             // Cambia il background e rimuovi il pulsante "Pronto" dopo la connessione
             Platform.runLater(() -> {
                 // Cambia l'immagine di sfondo
@@ -185,6 +282,7 @@ public class MainMenuClient extends Application {
                 // Rimuovi il pulsante "Pronto" dalla scena
                 root.getChildren().remove(buttonImageView);
                 root.getChildren().add(buttonDiceImageView);
+                root.getChildren().addAll(playerArea,labelPrimoLancio, labelSecondoLancio, labelMalus, labelBonus, labelPosizione, labelZona, labelTurni);
 
             });
 
@@ -194,11 +292,68 @@ public class MainMenuClient extends Application {
             });
             // Thread per ricevere messaggi dal ServerGame
             new Thread(() -> {
+                String primoLancio = "";
+                String secondoLancio = "";
+                String malus = "";
+                String bonus = "";
+                String posizione = "";
+                String zona = "";
+                String turni = "";
+
+                labelPrimoLancio.setText(primoLancio);
+                labelSecondoLancio.setText(secondoLancio);
+                labelMalus.setText(malus);
+                labelBonus.setText(bonus);
+                labelPosizione.setText(posizione);
+                labelZona.setText(zona);
+                labelTurni.setText(turni);
                 try {
                     String gameMessage;
                     while ((gameMessage = gameIn.readLine()) != null) {
                         String finalGameMessage = gameMessage;
-                        Platform.runLater(() -> chatArea.appendText("ServerGame: " + finalGameMessage + "\n"));
+
+                        // Verifica i messaggi ricevuti e aggiorna le variabili di gioco
+                        if (finalGameMessage.contains("Hai la prima volta lanciato")) {
+                            // Estrai il valore del primo lancio
+                            primoLancio = finalGameMessage.split(" ")[6]; // supponendo che il numero del lancio sia sempre al 6° indice
+                            String finalPrimoLancio = primoLancio;
+                            Platform.runLater(() ->  labelPrimoLancio.setText(finalPrimoLancio));
+                        } else if (finalGameMessage.contains("Hai la seconda volta lanciato")) {
+                            // Estrai il valore del secondo lancio
+                            secondoLancio = finalGameMessage.split(" ")[6]; // supponendo che il numero del lancio sia sempre al 6° indice
+                            String finalSecondoLancio = secondoLancio;
+                            Platform.runLater(() -> labelSecondoLancio.setText(finalSecondoLancio));
+                        } else if (finalGameMessage.contains("ha lanciato un")) {
+                            // Estrai la nuova posizione
+                            posizione = finalGameMessage;
+                            String finalPosizione = posizione;
+                            //Platform.runLater(() -> labelPosizione.setText(finalPosizione ));
+                            Platform.runLater(() -> playerArea.appendText(finalPosizione + "\n"));
+                        } else if (finalGameMessage.contains("Bonus Attuale:")) {
+                            // Estrai il bonus attuale
+                            bonus = finalGameMessage.split(": ")[1].split("\n")[0];
+                            String finalBonus = bonus;
+                            Platform.runLater(() -> labelBonus.setText(finalBonus));
+                        } else if (finalGameMessage.contains("Malus Attuale:")) {
+                            // Estrai il malus attuale
+                            malus = finalGameMessage.split(": ")[1].split("\n")[0];
+                            String finalMalus = malus;
+                            Platform.runLater(() -> labelMalus.setText(finalMalus));
+                        } else if (finalGameMessage.contains("Zona")) {
+                            // Aggiorna la zona (esempio di zona specifica)
+                            zona = finalGameMessage;
+                            String finalZona = zona;
+                            Platform.runLater(() -> labelZona.setText(finalZona));
+                        } else if (finalGameMessage.contains("Turni ")) {
+                            // Aggiorna i turni
+                            turni = finalGameMessage.replace("Turni ", "").trim();
+                            String finalTurni = turni;
+                            Platform.runLater(() -> labelTurni.setText(finalTurni));
+                        } else {
+                            // Invia solo il messaggio generico alla chat
+                            Platform.runLater(() -> chatArea.appendText(finalGameMessage + "\n"));
+
+                        }
                     }
                 } catch (Exception e) {
                     Platform.runLater(() -> chatArea.appendText("Connessione chiusa dal ServerGame.\n"));

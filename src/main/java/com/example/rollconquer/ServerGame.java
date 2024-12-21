@@ -9,6 +9,7 @@ public class ServerGame extends AbstractServer {
     public ServerGame(int port) {
         super(port);
     }
+
     @Override
     protected void handleClient(Socket clientSocket) {
         GameClientThread gameClientThread = new GameClientThread(this, clientSocket);
@@ -17,6 +18,7 @@ public class ServerGame extends AbstractServer {
         }
         gameClientThread.start();
     }
+
     public static void main(String[] args) {
         new ServerGame(12346).startServer();
     }

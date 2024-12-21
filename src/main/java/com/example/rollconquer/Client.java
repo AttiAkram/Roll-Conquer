@@ -12,7 +12,6 @@ public class Client {
     private static PrintWriter gameOut;   // Per inviare al ServerGame
 
 
-
     public static void main(String[] args) {
         try (Socket socket = new Socket("localhost", 12345)) {
             System.out.println("Connesso al server!");
