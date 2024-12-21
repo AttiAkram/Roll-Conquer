@@ -143,7 +143,7 @@ class Player {
     }
 
     public String showInfo() {
-        return "----- Informazioni di " + name + " -----\n " + "Posizione: " + position + "\n" + "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n" + "Ultimo Movimento: " + totalScore + "\n" + "----------------------------------------" + "\n";
+        return "----- Informazioni di " + name + " -----\n" + "Posizione: " + position + "\n" + "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n" + "Ultimo Movimento: " + totalScore + "\n" + "----------------------------------------" + "\n";
         /*System.out.println("----- Informazioni di " + name + " -----");
         System.out.println("Posizione: " + position);
         System.out.println("Bonus Attuale: " + currentBonus);

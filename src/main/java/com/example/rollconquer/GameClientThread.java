@@ -14,7 +14,7 @@ public class GameClientThread extends Thread {
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
-    private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
+    private static final Cell[] board = new Cell[20]; // Simuliamo la board di gioco
     private final ServerGame server;
     private static final List<GameClientThread> finalPlayers = Collections.synchronizedList(new ArrayList<>()); // Lista giocatori alla cella finale
 
@@ -96,6 +96,13 @@ public class GameClientThread extends Thread {
         out.println("Hai la seconda volta lanciato un " + (diceRoll - diceRoll2) + ".");
         out.println("Nuova posizione: " + player.getPosition());
 
+        // Invio delle informazioni al client
+        /*out.println("Hai lanciato un " + diceRoll + ".");
+        out.println("Nuova posizione: " + player.getPosition());*/
+
+        // Mostra informazioni aggiornate
+        out.println(player.showInfo() + player.getLastZone());
+
         broadcast(player.getName() + " ha lanciato un " + diceRoll + " e ora è in posizione " + player.getPosition());
 
         // Controllo se il giocatore ha raggiunto la cella finale
@@ -176,7 +183,7 @@ public class GameClientThread extends Thread {
             } else if (probability <= 40) {
                 board[i] = new Cell(ZoneType.NEUTRAL, "Zona Neutra");
             } else if (probability <= 60) {
-                board[i] = new Cell(ZoneType.REST, "Zona Riposo");
+                board[i] = new Cell(ZoneType.REST, "Zona Riposo ");
             } else if (probability <= 80) {
                 board[i] = new Cell(ZoneType.HOSTILE, "Zona Ostile");
             } else {
