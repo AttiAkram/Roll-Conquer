@@ -14,7 +14,7 @@ public class GameClientThread extends Thread {
     private Player player; // Oggetto Player per ogni client
     private static final Random random = new Random();
     public static final List<GameClientThread> playersList = Collections.synchronizedList(new ArrayList<>());
-    private static final Cell[] board = new Cell[100]; // Simuliamo la board di gioco
+    private static final Cell[] board = new Cell[20]; // Simuliamo la board di gioco
     private final ServerGame server;
 
     // Costruttore
@@ -71,7 +71,7 @@ public class GameClientThread extends Thread {
 
     private void raiseCountLoop() {
         boolean flag = true;
-        for (GameClientThread game: playersList) {
+        for (GameClientThread game : playersList) {
             if (game.player.historyThrow.size() < this.server.loopCount) {
                 flag = false;
                 break;
@@ -85,14 +85,17 @@ public class GameClientThread extends Thread {
     // Metodo per gestire il lancio dei dadi
     private int handleDiceRoll() {
         int diceRoll = rollDice(6); // Lancia un dado a 6 facce
+
+
         int movement = player.calculateMovement(diceRoll); // Calcola il movimento
         player.move(movement, board); // Muove il giocatore sulla board
 
         // Invio delle informazioni al client
-        out.println("Hai lanciato un " + diceRoll + ".");
-        out.println("Nuova posizione: " + player.getPosition());
+        /*out.println("Hai lanciato un " + diceRoll + ".");
+        out.println("Nuova posizione: " + player.getPosition());*/
 
         // Mostra informazioni aggiornate
+        out.println(player.showInfo() + player.getLastZone());
         broadcast(player.getName() + " ha lanciato un " + diceRoll + " e ora è in posizione " + player.getPosition());
 
         return diceRoll;
@@ -105,7 +108,7 @@ public class GameClientThread extends Thread {
             if (probability <= 40) {
                 board[i] = new Cell(ZoneType.NEUTRAL, "Zona Neutra");
             } else if (probability <= 60) {
-                board[i] = new Cell(ZoneType.REST, "Zona Riposo");
+                board[i] = new Cell(ZoneType.REST, "Zona Riposo ");
             } else if (probability <= 80) {
                 board[i] = new Cell(ZoneType.HOSTILE, "Zona Ostile");
             } else {
