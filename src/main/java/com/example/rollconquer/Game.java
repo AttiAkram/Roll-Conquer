@@ -51,6 +51,7 @@ class Player {
     private int totalScore;
     private int currentBonus;
     private int currentMalus;
+    private String lastZone;
     public final ArrayList<Integer> historyThrow = new ArrayList<>();
 
     public Player(String name) {
@@ -63,6 +64,10 @@ class Player {
 
     public String getName() {
         return name;
+    }
+
+    public String getLastZone() {
+        return lastZone;
     }
 
     public int getPosition() {
@@ -90,20 +95,25 @@ class Player {
                 int treasureBonus = rollTreasureBonus();
                 currentBonus += treasureBonus;
                 System.out.println("Hai trovato un tesoro! Bonus aggiunto: " + treasureBonus);
+                lastZone = "Hai trovato un tesoro!";
                 break;
 
             case HOSTILE:
                 int hostilePenalty = rollHostilePenalty();
                 currentMalus += hostilePenalty;
                 System.out.println("Zona Ostile! Penalità subita: " + hostilePenalty);
+                lastZone = "Zona Ostile!";
                 break;
 
             case REST:
                 resetBonusMalus();
+                lastZone = "Zona Riposo!";
                 break;
 
             case NEUTRAL:
                 System.out.println("Zona Neutra: Nessun effetto.");
+                lastZone = "Zona Neutra.";
+
                 break;
 
             default:
@@ -132,14 +142,16 @@ class Player {
         else return -5;
     }
 
-    public void showInfo() {
-        System.out.println("----- Informazioni di " + name + " -----");
+    public String showInfo() {
+        return "----- Informazioni di " + name + " -----\n " + "Posizione: " + position + "\n" + "Bonus Attuale: " + currentBonus + "\n" + "Malus Attuale: " + currentMalus + "\n" + "Ultimo Movimento: " + totalScore + "\n" + "----------------------------------------" + "\n";
+        /*System.out.println("----- Informazioni di " + name + " -----");
         System.out.println("Posizione: " + position);
         System.out.println("Bonus Attuale: " + currentBonus);
         System.out.println("Malus Attuale: " + currentMalus);
         System.out.println("Ultimo Movimento: " + totalScore);
-        System.out.println("----------------------------------------");
+        System.out.println("----------------------------------------");*/
     }
+
 }
 
 // Enum e Classe Cella per le costanti
